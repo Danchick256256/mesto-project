@@ -1,0 +1,7 @@
+.card__image {
+    overflow: hidden;
+    width: 282px;
+    height: 282px;
+    position: relative;
+    transition: all .2s ease-in-out;
+}

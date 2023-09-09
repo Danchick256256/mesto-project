@@ -1,0 +1,10 @@
+.card {
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    height: fit-content;
+    position: relative;
+
+    visibility: visible;
+    transition: all 0.3s ease-in-out;
+}

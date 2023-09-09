@@ -1,0 +1,16 @@
+.card__button-like {
+    align-self: center;
+    background: url("../../../images/like-button.svg");
+    border: none;
+    height: 19px;
+    width: 22px;
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card__button-like:hover {
+    cursor: pointer;
+    opacity: 0.5;
+}

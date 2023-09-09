@@ -1,0 +1,6 @@
+.card__container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 18px 15px 18px 21px;
+}
