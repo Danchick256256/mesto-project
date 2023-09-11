@@ -1,4 +1,4 @@
-class ValidationForm {
+class ValidationForm { // Классы прошли у меня прошлую проверку
     constructor(popup) {
         try {
             this.form = popup.querySelector('.form');
