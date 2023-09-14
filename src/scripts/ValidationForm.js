@@ -1,44 +1,71 @@
-class ValidationForm { // Классы прошли у меня прошлую проверку
-    constructor(popup) {
+class ValidationForm {
+    constructor({formSelector, inputSelector, submitButtonSelector, inactiveButtonClass, inputErrorClass, errorClass}) {
         try {
-            this.form = popup.querySelector('.form');
-            this.inputList = Array.from(this.form.querySelectorAll('.form__input'));
-            this.submitButton = popup.querySelector('.popup__button-submit');
-            this.checkValidity() ? this.disableButton() : this.enableButton();
-            this.setEventListeners();
+            this.inactiveButtonClass = inactiveButtonClass;
+            this.inputErrorClass = inputErrorClass;
+            this.errorClass = errorClass;
+            for (const formElement of Array.from(document.querySelectorAll(formSelector))) {
+                const inputList = Array.from(formElement.querySelectorAll(inputSelector));
+                if (inputList.length > 0) {
+                    const submitButton = formElement.querySelector(submitButtonSelector);
+                    this.checkValidity(inputList) ? this.disableButton(submitButton) : this.enableButton(submitButton);
+                    this.setEventListeners(formElement, inputList, submitButton);
+                }
+            }
+
         } catch (e) {}
     };
 
-    setEventListeners() {
-        this.inputList.forEach((inputElement) => {
+    setEventListeners(formElement, inputList, submitButton) {
+        inputList.forEach((inputElement) => {
             inputElement.addEventListener('input', () => {
-                this.checkValidity() ? this.disableButton() : this.enableButton();
-                const errorElement = this.form.querySelector(`#${inputElement.id}-error`);
+                this.checkValidity(inputList) ? this.disableButton(submitButton) : this.enableButton(submitButton);
+                const errorElement = formElement.querySelector(`#${inputElement.id}-error`);
                 if (!inputElement.validity.valid) {
-                    inputElement.classList.add('popup__item_error');
-                    errorElement.classList.add('popup__input-error_active');
-                    errorElement.textContent = inputElement.validationMessage;
+                    inputElement.classList.add(this.inputErrorClass);
+                    errorElement.classList.add(this.errorClass);
+
+                    if (inputElement.validity.isCustom) {
+                        errorElement.textContent = `Может содержать латинские буквы, кириллические буквы, знаки дефиса и пробелы.`;
+                    } else if (inputElement.validity.valueMissing) {
+                        errorElement.textContent = `Вы пропустили это поле.`;
+                    } else if (inputElement.validity.tooShort) {
+                        errorElement.textContent = `Минимальное количество символов: 2. Длина текста сейчас: ${inputElement.value.length} символ`;
+                    } else if (inputElement.validity.typeMismatch) {
+                        errorElement.textContent = `Введите адрес сайта.`;
+                    } else {
+                        errorElement.textContent = inputElement.validationMessage;
+                    }
                 } else {
-                    inputElement.classList.remove('popup__item_error');
-                    errorElement.classList.remove('popup__input-error_active');
+                    inputElement.classList.remove(this.inputErrorClass);
+                    errorElement.classList.remove(this.errorClass);
                     errorElement.textContent = '';
                 }
             });
         });
     };
 
-    disableButton() {
-        this.submitButton.disabled = true;
-        this.submitButton.classList.add('popup__button-submit_disabled');
+    disableButton(submitButton) {
+        submitButton.disabled = true;
+        submitButton.classList.add(this.inactiveButtonClass);
     };
 
-    enableButton() {
-        this.submitButton.disabled = false;
-        this.submitButton.classList.remove('popup__button-submit_disabled');
+    enableButton(submitButton) {
+        submitButton.disabled = false;
+        submitButton.classList.remove(this.inactiveButtonClass);
     };
 
-    checkValidity() {
-        return this.inputList.some((inputElement) => {
+    checkValidity(inputList) {
+        return inputList.some((inputElement) => {
+            if (inputElement.type === "text") {
+                const pattern = /^[A-Za-zА-Яа-яЁё\s-]+$/;
+                if (inputElement.value.match(pattern) === null) {
+                    inputElement.validity.isCustom = true;
+                    return true;
+                } else {
+                    inputElement.validity.isCustom = false;
+                }
+            }
             return !inputElement.validity.valid;
         });
     };

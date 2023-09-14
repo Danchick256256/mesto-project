@@ -1,4 +1,7 @@
-class Card { // Классы прошли у меня прошлую проверку
+import {openPopup} from "./utils";
+
+
+class Card {
     constructor(imageLink, name, templateClass) {
         this.image = imageLink;
         this.name = name;
@@ -49,8 +52,8 @@ class Card { // Классы прошли у меня прошлую прове�
                 }
             )
 
-            popupCaption.innerHTML = this.cardTitle.textContent;
-            imagePopup.classList.add('popup_opened');
+            popupCaption.textContent = this.cardTitle.textContent;
+            openPopup(imagePopup);
         });
 
         return cardElement;
@@ -64,20 +67,3 @@ const getMeta = (url, callback) => {
 }
 
 export default Card;
-
-export function openPopup(popup) {
-    console.log(`{open.popup{${popup}}`);
-    const inputElements = Array.from(popup.querySelectorAll('.form__input'));
-    const buttonSubmit = popup.querySelector(`.popup__button-submit`);
-
-    const valid = inputElements.reduce((isValid, inputElement) => inputElement.validity.valid ? isValid : false, true);
-
-    if (!valid) {
-        buttonSubmit.disabled = true;
-        buttonSubmit.classList.add('popup__button-submit_disabled')
-    } else {
-        buttonSubmit.disabled = false;
-        buttonSubmit.classList.remove('popup__button-submit_disabled')
-    }
-    popup.classList.add('popup_opened');
-}

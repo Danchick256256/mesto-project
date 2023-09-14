@@ -3,7 +3,7 @@ import './pages/index.css';
 import Card from './scripts/Card.js';
 import ValidationForm from './scripts/ValidationForm.js';
 
-import {openPopup} from "./scripts/Card.js";
+import {openPopup, closePopup} from "./scripts/utils.js";
 import {initialCards} from "./scripts/initialCards";
 
 const editButton = document.querySelector('.profile__edit-button');
@@ -30,29 +30,28 @@ const editFormElement = document.querySelector("#editForm");
 const nameInput = editFormElement.querySelector('input[name="username"]');
 const jobInput = editFormElement.querySelector('input[name="job"]');
 
+const name = document.querySelector('.profile__title');
+const job = document.querySelector('.profile__subtitle');
+
 const newPlaceFormElement = document.querySelector("#newPlaceForm");
 const newPlaceNameInput = newPlaceFormElement.querySelector('input[name="name"]');
 const newPlaceLinkInput = newPlaceFormElement.querySelector('input[name="link"]');
 
-document.addEventListener('keydown', (event) => {
-    if (event.code === "Escape") {
-        console.log(`{escape.pressed}`);
-        for (const popup of popups) {
-            closePopup(popup);
+popups.forEach((popup) => {
+    popup.addEventListener('mousedown', (evt) => {
+        if (evt.target.classList.contains('popup_opened')) {
+            closePopup(popup)
         }
-    }
-}, false);
-
-for (const closeButton of closeButtons) {
-    closeButton.addEventListener('click', () => {
-        for (const popup of popups) {
-            closePopup(popup);
+        if (evt.target.classList.contains('popup__button-close')) {
+            closePopup(popup)
         }
-    });
-}
+    })
+})
 
 editButton.addEventListener('click', () => {
     console.log(`{click.edit.button}`);
+    nameInput.value = nameInput.value.length === 0 ? name.textContent : nameInput.value;
+    jobInput.value = jobInput.value.length === 0 ? job.textContent : jobInput.value;
     openPopup(editPopup);
 });
 
@@ -61,20 +60,20 @@ addButton.addEventListener('click', () => {
     openPopup(newPlacePopup);
 });
 
-const closePopup = (popup) => {
-    console.log(`{close.popup{${popup}}`);
-    popup.classList.remove('popup_opened');
-};
-
 profileAvatar.addEventListener('click', () => {
     openPopup(editAvatarPopup);
 });
 
-// Мне нужно полностью переделывать код, то что нужно выполнено же
+
+const createCard = (link, title, template) => {
+    const card = new Card(link, title, template);
+    return card.createCard();
+}
+
 
 const addInitialCard = () => {
     for (const cardData of initialCards) {
-        const card = new Card(cardData.link, cardData.title, '.card__template').createCard();
+        const card = createCard(cardData.link, cardData.title, '.card__template');
         console.log(`{adding.initial.cards{${cardData.link}, ${cardData.name}}`);
         cardsSection.prepend(card);
     }
@@ -98,7 +97,7 @@ function handleNewPlaceFormSubmit(evt) {
     console.log(`{submit.newPlace.form}`);
     evt.preventDefault();
 
-    const card = new Card(newPlaceLinkInput.value, newPlaceNameInput.value, '.card__template').createCard();
+    const card = createCard(newPlaceLinkInput.value, newPlaceNameInput.value, '.card__template');
     newPlaceLinkInput.value = "";
     newPlaceNameInput.value = "";
     cardsSection.prepend(card);
@@ -118,4 +117,11 @@ editFormElement.addEventListener('submit', handleEditFormSubmit);
 newPlaceFormElement.addEventListener('submit', handleNewPlaceFormSubmit);
 editAvatarPopup.addEventListener('submit', handleAvatarUpdateSubmit);
 
-popups.forEach((popup) => new ValidationForm(popup));
+new ValidationForm({
+    formSelector: '.form',
+    inputSelector: '.form__input',
+    submitButtonSelector: '.popup__button-submit',
+    inactiveButtonClass: 'popup__button-submit_disabled',
+    inputErrorClass: 'popup__item_error',
+    errorClass: 'popup__input-error_active'
+});
