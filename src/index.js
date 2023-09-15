@@ -123,5 +123,6 @@ new ValidationForm({
     submitButtonSelector: '.popup__button-submit',
     inactiveButtonClass: 'popup__button-submit_disabled',
     inputErrorClass: 'popup__item_error',
-    errorClass: 'popup__input-error_active'
+    errorClass: 'popup__input-error_active',
+    popupOpenedClass: 'popup_opened'
 });

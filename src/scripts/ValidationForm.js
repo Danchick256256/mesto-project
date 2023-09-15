@@ -1,6 +1,7 @@
 class ValidationForm {
-    constructor({formSelector, inputSelector, submitButtonSelector, inactiveButtonClass, inputErrorClass, errorClass}) {
+    constructor({formSelector, inputSelector, submitButtonSelector, inactiveButtonClass, inputErrorClass, errorClass, popupOpenedClass}) {
         try {
+            this.popupOpenedClass = popupOpenedClass;
             this.inactiveButtonClass = inactiveButtonClass;
             this.inputErrorClass = inputErrorClass;
             this.errorClass = errorClass;
@@ -17,6 +18,15 @@ class ValidationForm {
     };
 
     setEventListeners(formElement, inputList, submitButton) {
+        const observer = new MutationObserver((mutation) => { //  не знаю как сделать это по другому и чтобы функция была более менее чистой (можно проверять при открытии попапа но это мне кажется будет хуже)
+            if (mutation[0].type === 'attributes' && mutation[0].attributeName === 'class') {
+                if (mutation[0].target.classList.contains(this.popupOpenedClass)) {
+                    this.checkValidity(inputList) ? this.disableButton(submitButton) : this.enableButton(submitButton);
+                }
+            }
+        });
+        observer.observe(document, { attributes: true, subtree: true, attributeFilter: ['class'] });
+
         inputList.forEach((inputElement) => {
             inputElement.addEventListener('input', () => {
                 this.checkValidity(inputList) ? this.disableButton(submitButton) : this.enableButton(submitButton);
