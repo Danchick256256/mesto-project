@@ -5,36 +5,21 @@ import Api from './scripts/API';
 import ValidationForm from './scripts/ValidationForm.js';
 
 import {openPopup, closePopup} from "./scripts/utils.js";
+import {
+    buttonOpenPopupAddCard, avatarInput, cardsSection,
+    avatarEditPopup,
+    buttonOpenPopupEditUserData, formElementEdit,
+    popupEdit,
+    job,
+    name,
+    jobInput,
+    nameInput, newPlaceFormElement, newPlaceLinkInput, newPlaceNameInput,
+    newPlacePopup, popups,
+    profileAvatar,
+    profileSubtitle, profileTitle
+} from "./scripts/constants";
 
-const editButton = document.querySelector('.profile__edit-button');
 
-const addButton = document.querySelector('.profile__add-button');
-
-const cardsSection = document.querySelector('.elements');
-
-const popups = document.querySelectorAll('.popup');
-
-const editPopup = document.querySelector('#editPopup');
-const editAvatarPopup = document.querySelector('#avatarPopup');
-const newPlacePopup = document.querySelector('#newPlacePopup');
-
-const profileTitle = document.querySelector('.profile__title');
-const profileAvatar = document.querySelector('.profile__avatar');
-const profileSubtitle = document.querySelector('.profile__subtitle');
-
-const editAvatarElement = document.querySelector("#editAvatarForm");
-const avatarInput = editAvatarElement.querySelector('input[name="avatar"]');
-
-const editFormElement = document.querySelector("#editForm");
-const nameInput = editFormElement.querySelector('input[name="username"]');
-const jobInput = editFormElement.querySelector('input[name="job"]');
-
-const name = document.querySelector('.profile__title');
-const job = document.querySelector('.profile__subtitle');
-
-const newPlaceFormElement = document.querySelector("#newPlaceForm");
-const newPlaceNameInput = newPlaceFormElement.querySelector('input[name="name"]');
-const newPlaceLinkInput = newPlaceFormElement.querySelector('input[name="link"]');
 
 const fetchParams = {
     baseUrl: 'https://nomoreparties.co/v1/plus-cohort-28',
@@ -46,16 +31,7 @@ const fetchParams = {
 
 const api = new Api(fetchParams);
 
-let userData;
-
-async function setUserData() {
-    await api.getUserInfo()
-        .then(async response => {
-            userData = await response;
-        });
-}
-
-await setUserData();
+let user;
 
 popups.forEach((popup) => {
     popup.addEventListener('mousedown', (evt) => {
@@ -68,43 +44,27 @@ popups.forEach((popup) => {
     })
 })
 
-editButton.addEventListener('click', () => {
+buttonOpenPopupEditUserData.addEventListener('click', () => {
     console.log(`{click.edit.button}`);
     nameInput.value = nameInput.value.length === 0 ? name.textContent : nameInput.value;
     jobInput.value = jobInput.value.length === 0 ? job.textContent : jobInput.value;
-    openPopup(editPopup);
+    openPopup(popupEdit);
 });
 
-addButton.addEventListener('click', () => {
+buttonOpenPopupAddCard.addEventListener('click', () => {
     console.log(`{click.add.button}`);
     openPopup(newPlacePopup);
 });
 
 profileAvatar.addEventListener('click', () => {
-    openPopup(editAvatarPopup);
+    openPopup(avatarEditPopup);
 });
 
 
 const createCard = (link, title, template, createdAt, likes, owner, _id, userData) => {
-    const card = new Card(link, title, template, createdAt, likes, owner, _id, userData);
+    const card = new Card(link, title, template, createdAt, likes, owner, _id, userData, );
     return card.createCard(api);
 }
-
-const addInitialCard = () => {
-    api.resolve().then(data => {
-        profileTitle.textContent = data[0].name;
-        profileSubtitle.textContent = data[0].about;
-        profileAvatar.style.backgroundImage = `url(${data[0].avatar})`
-
-        for (const cardData of data[1].reverse()) {
-            const card = createCard(cardData.link, cardData.name, '.card__template', cardData.createdAt, cardData.likes, cardData.owner, cardData._id, userData);
-            console.log(`{adding.initial.cards{${cardData.link}, ${cardData.name}}`);
-            cardsSection.prepend(card);
-        }
-    });
-};
-
-addInitialCard();
 
 function handleEditFormSubmit(evt) {
     console.log(`{submit.edit.form}`);
@@ -113,8 +73,9 @@ function handleEditFormSubmit(evt) {
     jobInput.textContent = jobInput.value;
     profileTitle.innerText = nameInput.value;
     profileSubtitle.innerText = jobInput.value;
-    api.setUserInfo(nameInput.value, jobInput.value);
-    closePopup(editPopup);
+    api.setUserInfo(nameInput.value, jobInput.value)
+        .catch(err => console.log(err));
+    closePopup(popupEdit);
 }
 
 function handleNewPlaceFormSubmit(evt) {
@@ -123,7 +84,7 @@ function handleNewPlaceFormSubmit(evt) {
 
     api.saveCard(newPlaceNameInput.value, newPlaceLinkInput.value)
         .then(response => {
-            const card = new Card(newPlaceLinkInput.value, newPlaceNameInput.value, '.card__template', response.createdAt, response.likes, response.owner, response._id, userData).createCard(api);
+            const card = new Card(newPlaceLinkInput.value, newPlaceNameInput.value, '.card__template', response.createdAt, response.likes, response.owner, response._id, user).createCard(api);
             newPlaceLinkInput.value = "";
             newPlaceNameInput.value = "";
             cardsSection.prepend(card);
@@ -136,13 +97,13 @@ function handleAvatarUpdateSubmit(evt) {
     evt.preventDefault();
     profileAvatar.style.backgroundImage = `url(${avatarInput.value})`
     api.setAvatar(avatarInput.value).then(r => console.log(r));
-    closePopup(editAvatarPopup);
+    closePopup(avatarEditPopup);
 }
 
 
-editFormElement.addEventListener('submit', handleEditFormSubmit);
+formElementEdit.addEventListener('submit', handleEditFormSubmit);
 newPlaceFormElement.addEventListener('submit', handleNewPlaceFormSubmit);
-editAvatarPopup.addEventListener('submit', handleAvatarUpdateSubmit);
+avatarEditPopup.addEventListener('submit', handleAvatarUpdateSubmit);
 
 new ValidationForm({
     formSelector: '.form',
@@ -153,3 +114,21 @@ new ValidationForm({
     errorClass: 'popup__input-error_active',
     popupOpenedClass: 'popup_opened'
 });
+
+Promise.all([api.getUserInfo(), api.getCards()])
+    .then((result) => {
+        const [userData, cards] = result;
+        user = userData;
+        profileTitle.textContent = userData.name;
+        profileSubtitle.textContent = userData.about;
+        profileAvatar.style.backgroundImage = `url(${userData.avatar})`
+
+        for (const cardData of cards.reverse()) {
+            const card = createCard(cardData.link, cardData.name, '.card__template', cardData.createdAt, cardData.likes, cardData.owner, cardData._id, userData);
+            console.log(`{adding.initial.cards{${cardData.link}, ${cardData.name}}`);
+            cardsSection.prepend(card);
+        }
+    })
+    .catch((err) => {
+        console.log(err);
+    });

@@ -1,4 +1,13 @@
 import {openPopup} from "./utils";
+import {
+    cardsSection,
+    imagePopup,
+    popupCaption,
+    popupImage,
+    profileAvatar,
+    profileSubtitle,
+    profileTitle
+} from "./constants";
 
 
 class Card {
@@ -14,10 +23,6 @@ class Card {
     }
 
     createCard(api) {
-        const imagePopup = document.querySelector('#imagePopup');
-        const popupImage = document.querySelector('.popup__image');
-        const popupCaption = document.querySelector('.popup__image-caption');
-
         const cardElement = document
             .querySelector(this.template)
             .content.querySelector('.card')
@@ -41,15 +46,23 @@ class Card {
             }
         }
 
+        setInterval(() => {
+            this.updateLikes(api);
+        }, 15000);
+
         this.likeButton.addEventListener('click', () => {
             console.log(`{handled.like.click}`);
             this.likeButton.classList.toggle('card__button-like_active_true')
             if (!this.likeButton.classList.contains('card__button-like_active_true')) {
-                this.likeCounter.textContent = this.likeCounter.textContent === "1" ? "" : (parseInt(this.likeCounter.textContent) - 1).toString();
-                api.dislikeCard(this._id);
+                //this.likeCounter.textContent = this.likeCounter.textContent === "1" ? "" : (parseInt(this.likeCounter.textContent) - 1).toString();
+                api.dislikeCard(this._id)
+                    .catch(err => console.log(err));
+                this.updateLikes(api); // c эти подходом лайки прогружается дольше
             } else {
-                this.likeCounter.textContent = this.likeCounter.textContent === "" ? 1 : (parseInt(this.likeCounter.textContent) + 1).toString();
-                api.likeCard(this._id);
+                //this.likeCounter.textContent = this.likeCounter.textContent === "" ? 1 : (parseInt(this.likeCounter.textContent) + 1).toString();
+                api.likeCard(this._id)
+                    .catch(err => console.log(err));
+                this.updateLikes(api);
             }
         });
 
@@ -59,7 +72,7 @@ class Card {
             api.deleteCard(this._id)
                 .then(evt => {
                     this.deleteButton.parentNode.classList.add("card__remove");
-                    setTimeout(() => cardElement.remove(), 350);
+                    setTimeout(() => cardElement.remove(), 350); // карточка удаляется из дом дерева
                 })
                 .catch(exception => console.log(exception))
         });
@@ -81,6 +94,23 @@ class Card {
         });
 
         return cardElement;
+    }
+
+    updateLikes = (api) => {
+        api.getCards()
+            .then((result) => {
+                for (const card of result) {
+                    for (const like of card.likes) {
+                        if (card._id === this._id) {
+                            if (card.likes.length === 1) this.likeCounter.textContent = '1';
+                            else this.likeCounter.textContent = card.likes.length;
+                        }
+                    }
+                }
+            })
+            .catch((err) => {
+                console.log("err");
+            })
     }
 }
 
