@@ -1,10 +1,10 @@
 import './pages/index.css';
 
 import Card from './scripts/Card.js';
+import Api from './scripts/API';
 import ValidationForm from './scripts/ValidationForm.js';
 
 import {openPopup, closePopup} from "./scripts/utils.js";
-import {initialCards} from "./scripts/initialCards";
 
 const editButton = document.querySelector('.profile__edit-button');
 
@@ -12,7 +12,6 @@ const addButton = document.querySelector('.profile__add-button');
 
 const cardsSection = document.querySelector('.elements');
 
-const closeButtons = document.querySelectorAll('.popup__button-close');
 const popups = document.querySelectorAll('.popup');
 
 const editPopup = document.querySelector('#editPopup');
@@ -36,6 +35,27 @@ const job = document.querySelector('.profile__subtitle');
 const newPlaceFormElement = document.querySelector("#newPlaceForm");
 const newPlaceNameInput = newPlaceFormElement.querySelector('input[name="name"]');
 const newPlaceLinkInput = newPlaceFormElement.querySelector('input[name="link"]');
+
+const fetchParams = {
+    baseUrl: 'https://nomoreparties.co/v1/plus-cohort-28',
+    headers: {
+        'authorization': '9bae86ff-d65a-4047-b517-3db91df3e9d1',
+        'Content-Type': 'application/json'
+    }
+};
+
+const api = new Api(fetchParams);
+
+let userData;
+
+async function setUserData() {
+    await api.getUserInfo()
+        .then(async response => {
+            userData = await response;
+        });
+}
+
+await setUserData();
 
 popups.forEach((popup) => {
     popup.addEventListener('mousedown', (evt) => {
@@ -65,20 +85,23 @@ profileAvatar.addEventListener('click', () => {
 });
 
 
-const createCard = (link, title, template) => {
-    const card = new Card(link, title, template);
-    return card.createCard();
+const createCard = (link, title, template, createdAt, likes, owner, _id, userData) => {
+    const card = new Card(link, title, template, createdAt, likes, owner, _id, userData);
+    return card.createCard(api);
 }
 
-
 const addInitialCard = () => {
-    for (const cardData of initialCards) {
-        const card = createCard(cardData.link, cardData.title, '.card__template');
-        console.log(`{adding.initial.cards{${cardData.link}, ${cardData.name}}`);
-        cardsSection.prepend(card);
-    }
-    profileTitle.textContent = "Жак Ив Кусто";
-    profileSubtitle.textContent = "Исследователь океана";
+    api.resolve().then(data => {
+        profileTitle.textContent = data[0].name;
+        profileSubtitle.textContent = data[0].about;
+        profileAvatar.style.backgroundImage = `url(${data[0].avatar})`
+
+        for (const cardData of data[1].reverse()) {
+            const card = createCard(cardData.link, cardData.name, '.card__template', cardData.createdAt, cardData.likes, cardData.owner, cardData._id, userData);
+            console.log(`{adding.initial.cards{${cardData.link}, ${cardData.name}}`);
+            cardsSection.prepend(card);
+        }
+    });
 };
 
 addInitialCard();
@@ -90,6 +113,7 @@ function handleEditFormSubmit(evt) {
     jobInput.textContent = jobInput.value;
     profileTitle.innerText = nameInput.value;
     profileSubtitle.innerText = jobInput.value;
+    api.setUserInfo(nameInput.value, jobInput.value);
     closePopup(editPopup);
 }
 
@@ -97,11 +121,13 @@ function handleNewPlaceFormSubmit(evt) {
     console.log(`{submit.newPlace.form}`);
     evt.preventDefault();
 
-    const card = createCard(newPlaceLinkInput.value, newPlaceNameInput.value, '.card__template');
-    newPlaceLinkInput.value = "";
-    newPlaceNameInput.value = "";
-    cardsSection.prepend(card);
-
+    api.saveCard(newPlaceNameInput.value, newPlaceLinkInput.value)
+        .then(response => {
+            const card = new Card(newPlaceLinkInput.value, newPlaceNameInput.value, '.card__template', response.createdAt, response.likes, response.owner, response._id, userData).createCard(api);
+            newPlaceLinkInput.value = "";
+            newPlaceNameInput.value = "";
+            cardsSection.prepend(card);
+        });
     closePopup(newPlacePopup);
 }
 
@@ -109,6 +135,7 @@ function handleAvatarUpdateSubmit(evt) {
     console.log(`{submit.updateAvatar.form}`);
     evt.preventDefault();
     profileAvatar.style.backgroundImage = `url(${avatarInput.value})`
+    api.setAvatar(avatarInput.value).then(r => console.log(r));
     closePopup(editAvatarPopup);
 }
 
