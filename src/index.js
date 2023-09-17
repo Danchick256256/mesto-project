@@ -20,7 +20,6 @@ import {
 } from "./scripts/constants";
 
 
-
 const fetchParams = {
     baseUrl: 'https://nomoreparties.co/v1/plus-cohort-28',
     headers: {
@@ -32,6 +31,38 @@ const fetchParams = {
 const api = new Api(fetchParams);
 
 let user;
+
+const createCard = (link, title, template, createdAt, likes, owner, _id, userData) => {
+    const card = new Card(link, title, template, createdAt, likes, owner, _id, userData, );
+    return card.createCard(api);
+}
+
+async function fetchData() {
+    try {
+        await Promise.all([api.getUserInfo(), api.getCards()])
+            .then((result) => {
+                const [userData, cards] = result;
+                user = userData;
+                profileTitle.textContent = userData.name;
+                profileSubtitle.textContent = userData.about;
+                profileAvatar.style.backgroundImage = `url(${userData.avatar})`
+
+                for (const cardData of cards.reverse()) {
+                    const card = createCard(cardData.link, cardData.name, '.card__template', cardData.createdAt, cardData.likes, cardData.owner, cardData._id, userData);
+                    console.log(`{adding.initial.cards{${cardData.link}, ${cardData.name}}`);
+                    cardsSection.prepend(card);
+                }
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    } catch (error) {
+        console.error('Error: ' + error);
+    }
+}
+
+await fetchData()
+    .catch(err => console.log(err));
 
 popups.forEach((popup) => {
     popup.addEventListener('mousedown', (evt) => {
@@ -59,12 +90,6 @@ buttonOpenPopupAddCard.addEventListener('click', () => {
 profileAvatar.addEventListener('click', () => {
     openPopup(avatarEditPopup);
 });
-
-
-const createCard = (link, title, template, createdAt, likes, owner, _id, userData) => {
-    const card = new Card(link, title, template, createdAt, likes, owner, _id, userData, );
-    return card.createCard(api);
-}
 
 function handleEditFormSubmit(evt) {
     console.log(`{submit.edit.form}`);
@@ -114,21 +139,3 @@ new ValidationForm({
     errorClass: 'popup__input-error_active',
     popupOpenedClass: 'popup_opened'
 });
-
-Promise.all([api.getUserInfo(), api.getCards()])
-    .then((result) => {
-        const [userData, cards] = result;
-        user = userData;
-        profileTitle.textContent = userData.name;
-        profileSubtitle.textContent = userData.about;
-        profileAvatar.style.backgroundImage = `url(${userData.avatar})`
-
-        for (const cardData of cards.reverse()) {
-            const card = createCard(cardData.link, cardData.name, '.card__template', cardData.createdAt, cardData.likes, cardData.owner, cardData._id, userData);
-            console.log(`{adding.initial.cards{${cardData.link}, ${cardData.name}}`);
-            cardsSection.prepend(card);
-        }
-    })
-    .catch((err) => {
-        console.log(err);
-    });
