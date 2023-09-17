@@ -69,10 +69,6 @@ export default class Api {
         }).then(this.getData);
     }
 
-    resolve() {
-        return Promise.all([this.getUserInfo(), this.getCards()]);
-    }
-
     getData(res) {
         if (res.ok) {
             return res.json();

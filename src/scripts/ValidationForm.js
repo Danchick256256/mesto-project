@@ -31,7 +31,7 @@ class ValidationForm {
             inputElement.addEventListener('input', () => {
                 this.checkValidity(inputList) ? this.disableButton(submitButton) : this.enableButton(submitButton);
                 const errorElement = formElement.querySelector(`#${inputElement.id}-error`);
-                if (!inputElement.validity.valid) {
+                if (!inputElement.validity.valid || inputElement.validity.isCustom) {
                     inputElement.classList.add(this.inputErrorClass);
                     errorElement.classList.add(this.errorClass);
 

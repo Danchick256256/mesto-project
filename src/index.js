@@ -4,7 +4,7 @@ import Card from './scripts/Card.js';
 import Api from './scripts/API';
 import ValidationForm from './scripts/ValidationForm.js';
 
-import {openPopup, closePopup} from "./scripts/utils.js";
+import {openPopup, closePopup, getMeta} from "./scripts/utils.js";
 import {
     buttonOpenPopupAddCard, avatarInput, cardsSection,
     avatarEditPopup,
@@ -16,7 +16,7 @@ import {
     nameInput, newPlaceFormElement, newPlaceLinkInput, newPlaceNameInput,
     newPlacePopup, popups,
     profileAvatar,
-    profileSubtitle, profileTitle
+    profileSubtitle, profileTitle, popupImage
 } from "./scripts/constants";
 
 
@@ -33,36 +33,29 @@ const api = new Api(fetchParams);
 let user;
 
 const createCard = (link, title, template, createdAt, likes, owner, _id, userData) => {
-    const card = new Card(link, title, template, createdAt, likes, owner, _id, userData, );
+    const card = new Card(link, title, template, createdAt, likes, owner, _id, userData,);
     return card.createCard(api);
 }
 
-async function fetchData() {
-    try {
-        await Promise.all([api.getUserInfo(), api.getCards()])
-            .then((result) => {
-                const [userData, cards] = result;
-                user = userData;
-                profileTitle.textContent = userData.name;
-                profileSubtitle.textContent = userData.about;
-                profileAvatar.style.backgroundImage = `url(${userData.avatar})`
+Promise.all([api.getUserInfo(), api.getCards()])
+    .then((result) => {
+        const [userData, cards] = result;
+        user = userData;
+        console.log("TEST")
+        profileTitle.textContent = userData.name;
+        profileSubtitle.textContent = userData.about;
+        profileAvatar.style.backgroundImage = `url(${userData.avatar})`
 
-                for (const cardData of cards.reverse()) {
-                    const card = createCard(cardData.link, cardData.name, '.card__template', cardData.createdAt, cardData.likes, cardData.owner, cardData._id, userData);
-                    console.log(`{adding.initial.cards{${cardData.link}, ${cardData.name}}`);
-                    cardsSection.prepend(card);
-                }
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    } catch (error) {
-        console.error('Error: ' + error);
-    }
-}
+        for (const cardData of cards.reverse()) {
+            const card = createCard(cardData.link, cardData.name, '.card__template', cardData.createdAt, cardData.likes, cardData.owner, cardData._id, userData);
+            console.log(`{adding.initial.cards{${cardData.link}, ${cardData.name}}`);
+            cardsSection.prepend(card);
+        }
+    })
+    .catch((err) => {
+        console.log(err);
+    });
 
-await fetchData()
-    .catch(err => console.log(err));
 
 popups.forEach((popup) => {
     popup.addEventListener('mousedown', (evt) => {
@@ -94,13 +87,13 @@ profileAvatar.addEventListener('click', () => {
 function handleEditFormSubmit(evt) {
     console.log(`{submit.edit.form}`);
     evt.preventDefault();
-    nameInput.textContent = nameInput.value;
-    jobInput.textContent = jobInput.value;
-    profileTitle.innerText = nameInput.value;
-    profileSubtitle.innerText = jobInput.value;
     api.setUserInfo(nameInput.value, jobInput.value)
+        .then(response => {
+            profileTitle.innerText = nameInput.value;
+            profileSubtitle.innerText = jobInput.value;
+            closePopup(popupEdit);
+        })
         .catch(err => console.log(err));
-    closePopup(popupEdit);
 }
 
 function handleNewPlaceFormSubmit(evt) {
@@ -109,20 +102,28 @@ function handleNewPlaceFormSubmit(evt) {
 
     api.saveCard(newPlaceNameInput.value, newPlaceLinkInput.value)
         .then(response => {
+            getMeta(newPlaceLinkInput.value, (width, height) => {
+            })
             const card = new Card(newPlaceLinkInput.value, newPlaceNameInput.value, '.card__template', response.createdAt, response.likes, response.owner, response._id, user).createCard(api);
             newPlaceLinkInput.value = "";
             newPlaceNameInput.value = "";
             cardsSection.prepend(card);
+            closePopup(newPlacePopup);
+        })
+        .catch(err => {
+            closePopup(newPlacePopup);
         });
-    closePopup(newPlacePopup);
 }
 
 function handleAvatarUpdateSubmit(evt) {
     console.log(`{submit.updateAvatar.form}`);
     evt.preventDefault();
-    profileAvatar.style.backgroundImage = `url(${avatarInput.value})`
-    api.setAvatar(avatarInput.value).then(r => console.log(r));
-    closePopup(avatarEditPopup);
+    api.setAvatar(avatarInput.value)
+        .then(r => {
+            profileAvatar.style.backgroundImage = `url(${avatarInput.value})`
+            closePopup(avatarEditPopup);
+        })
+        .catch(err => console.log(err));
 }
 
 

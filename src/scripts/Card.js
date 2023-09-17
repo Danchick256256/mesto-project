@@ -1,4 +1,4 @@
-import {openPopup} from "./utils";
+import {openPopup, getMeta} from "./utils";
 import {
     cardsSection,
     imagePopup,
@@ -50,19 +50,25 @@ class Card {
             this.updateLikes(api);
         }, 15000);
 
+        console.log(this._id)
+
         this.likeButton.addEventListener('click', () => {
             console.log(`{handled.like.click}`);
             this.likeButton.classList.toggle('card__button-like_active_true')
             if (!this.likeButton.classList.contains('card__button-like_active_true')) {
                 //this.likeCounter.textContent = this.likeCounter.textContent === "1" ? "" : (parseInt(this.likeCounter.textContent) - 1).toString();
                 api.dislikeCard(this._id)
+                    .then(response => {
+                        this.updateLikes(api);
+                    })
                     .catch(err => console.log(err));
-                this.updateLikes(api); // c эти подходом лайки прогружается дольше
             } else {
                 //this.likeCounter.textContent = this.likeCounter.textContent === "" ? 1 : (parseInt(this.likeCounter.textContent) + 1).toString();
                 api.likeCard(this._id)
+                    .then(response => {
+                        this.updateLikes(api);
+                    })
                     .catch(err => console.log(err));
-                this.updateLikes(api);
             }
         });
 
@@ -96,7 +102,7 @@ class Card {
         return cardElement;
     }
 
-    updateLikes = (api) => {
+    updateLikes = (api) => { // как мне это сделать если я не могу полувчить карточку по ее id?
         api.getCards()
             .then((result) => {
                 for (const card of result) {
@@ -112,12 +118,6 @@ class Card {
                 console.log("err");
             })
     }
-}
-
-const getMeta = (url, callback) => {
-    const img = new Image();
-    img.src = url;
-    img.onload = function() { callback(this.width, this.height); }
 }
 
 export default Card;
