@@ -46,27 +46,19 @@ class Card {
             }
         }
 
-        setInterval(() => {
-            this.updateLikes(api);
-        }, 15000);
-
-        console.log(this._id)
-
         this.likeButton.addEventListener('click', () => {
             console.log(`{handled.like.click}`);
             this.likeButton.classList.toggle('card__button-like_active_true')
             if (!this.likeButton.classList.contains('card__button-like_active_true')) {
-                //this.likeCounter.textContent = this.likeCounter.textContent === "1" ? "" : (parseInt(this.likeCounter.textContent) - 1).toString();
                 api.dislikeCard(this._id)
                     .then(response => {
-                        this.updateLikes(api);
+                        this.likeCounter.textContent = response.likes.length;
                     })
                     .catch(err => console.log(err));
             } else {
-                //this.likeCounter.textContent = this.likeCounter.textContent === "" ? 1 : (parseInt(this.likeCounter.textContent) + 1).toString();
                 api.likeCard(this._id)
                     .then(response => {
-                        this.updateLikes(api);
+                        this.likeCounter.textContent = response.likes.length;
                     })
                     .catch(err => console.log(err));
             }
@@ -78,7 +70,7 @@ class Card {
             api.deleteCard(this._id)
                 .then(evt => {
                     this.deleteButton.parentNode.classList.add("card__remove");
-                    setTimeout(() => cardElement.remove(), 350); // карточка удаляется из дом дерева
+                    setTimeout(() => cardElement.remove(), 350);
                 })
                 .catch(exception => console.log(exception))
         });
@@ -100,23 +92,6 @@ class Card {
         });
 
         return cardElement;
-    }
-
-    updateLikes = (api) => { // как мне это сделать если я не могу полувчить карточку по ее id?
-        api.getCards()
-            .then((result) => {
-                for (const card of result) {
-                    for (const like of card.likes) {
-                        if (card._id === this._id) {
-                            if (card.likes.length === 1) this.likeCounter.textContent = '1';
-                            else this.likeCounter.textContent = card.likes.length;
-                        }
-                    }
-                }
-            })
-            .catch((err) => {
-                console.log("err");
-            })
     }
 }
 

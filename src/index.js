@@ -37,26 +37,6 @@ const createCard = (link, title, template, createdAt, likes, owner, _id, userDat
     return card.createCard(api);
 }
 
-Promise.all([api.getUserInfo(), api.getCards()])
-    .then((result) => {
-        const [userData, cards] = result;
-        user = userData;
-        console.log("TEST")
-        profileTitle.textContent = userData.name;
-        profileSubtitle.textContent = userData.about;
-        profileAvatar.style.backgroundImage = `url(${userData.avatar})`
-
-        for (const cardData of cards.reverse()) {
-            const card = createCard(cardData.link, cardData.name, '.card__template', cardData.createdAt, cardData.likes, cardData.owner, cardData._id, userData);
-            console.log(`{adding.initial.cards{${cardData.link}, ${cardData.name}}`);
-            cardsSection.prepend(card);
-        }
-    })
-    .catch((err) => {
-        console.log(err);
-    });
-
-
 popups.forEach((popup) => {
     popup.addEventListener('mousedown', (evt) => {
         if (evt.target.classList.contains('popup_opened')) {
@@ -99,20 +79,19 @@ function handleEditFormSubmit(evt) {
 function handleNewPlaceFormSubmit(evt) {
     console.log(`{submit.newPlace.form}`);
     evt.preventDefault();
-
-    api.saveCard(newPlaceNameInput.value, newPlaceLinkInput.value)
-        .then(response => {
-            getMeta(newPlaceLinkInput.value, (width, height) => {
+    getMeta(newPlaceLinkInput.value, (width, height) => {
+        api.saveCard(newPlaceNameInput.value, newPlaceLinkInput.value)
+            .then(response => {
+                const card = new Card(newPlaceLinkInput.value, newPlaceNameInput.value, '.card__template', response.createdAt, response.likes, response.owner, response._id, user).createCard(api);
+                newPlaceLinkInput.value = "";
+                newPlaceNameInput.value = "";
+                cardsSection.prepend(card);
+                closePopup(newPlacePopup);
             })
-            const card = new Card(newPlaceLinkInput.value, newPlaceNameInput.value, '.card__template', response.createdAt, response.likes, response.owner, response._id, user).createCard(api);
-            newPlaceLinkInput.value = "";
-            newPlaceNameInput.value = "";
-            cardsSection.prepend(card);
-            closePopup(newPlacePopup);
-        })
-        .catch(err => {
-            closePopup(newPlacePopup);
-        });
+            .catch(err => {
+                console.log(err)
+            });
+    });
 }
 
 function handleAvatarUpdateSubmit(evt) {
@@ -130,6 +109,25 @@ function handleAvatarUpdateSubmit(evt) {
 formElementEdit.addEventListener('submit', handleEditFormSubmit);
 newPlaceFormElement.addEventListener('submit', handleNewPlaceFormSubmit);
 avatarEditPopup.addEventListener('submit', handleAvatarUpdateSubmit);
+
+Promise.all([api.getUserInfo(), api.getCards()])
+    .then((result) => {
+        const [userData, cards] = result;
+        user = userData;
+        console.log("TEST")
+        profileTitle.textContent = userData.name;
+        profileSubtitle.textContent = userData.about;
+        profileAvatar.style.backgroundImage = `url(${userData.avatar})`
+
+        for (const cardData of cards.reverse()) {
+            const card = createCard(cardData.link, cardData.name, '.card__template', cardData.createdAt, cardData.likes, cardData.owner, cardData._id, userData);
+            console.log(`{adding.initial.cards{${cardData.link}, ${cardData.name}}`);
+            cardsSection.prepend(card);
+        }
+    })
+    .catch((err) => {
+        console.log(err);
+    });
 
 new ValidationForm({
     formSelector: '.form',
