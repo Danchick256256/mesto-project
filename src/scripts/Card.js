@@ -1,12 +1,8 @@
 import {openPopup, getMeta} from "./utils";
 import {
-    cardsSection,
     imagePopup,
     popupCaption,
-    popupImage,
-    profileAvatar,
-    profileSubtitle,
-    profileTitle
+    popupImage
 } from "./constants";
 
 
@@ -48,16 +44,17 @@ class Card {
 
         this.likeButton.addEventListener('click', () => {
             console.log(`{handled.like.click}`);
-            this.likeButton.classList.toggle('card__button-like_active_true')
             if (!this.likeButton.classList.contains('card__button-like_active_true')) {
                 api.dislikeCard(this._id)
                     .then(response => {
+                        this.likeButton.classList.toggle('card__button-like_active_true')
                         this.likeCounter.textContent = response.likes.length;
                     })
                     .catch(err => console.log(err));
             } else {
                 api.likeCard(this._id)
                     .then(response => {
+                        this.likeButton.classList.toggle('card__button-like_active_true')
                         this.likeCounter.textContent = response.likes.length;
                     })
                     .catch(err => console.log(err));
@@ -68,7 +65,7 @@ class Card {
         this.deleteButton.addEventListener('click', () => {
             console.log(`{handled.delete.click}`);
             api.deleteCard(this._id)
-                .then(evt => {
+                .then(() => {
                     this.deleteButton.parentNode.classList.add("card__remove");
                     setTimeout(() => cardElement.remove(), 350);
                 })

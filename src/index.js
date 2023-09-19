@@ -129,7 +129,7 @@ Promise.all([api.getUserInfo(), api.getCards()])
         console.log(err);
     });
 
-new ValidationForm({
+const validData = {
     formSelector: '.form',
     inputSelector: '.form__input',
     submitButtonSelector: '.popup__button-submit',
@@ -137,4 +137,12 @@ new ValidationForm({
     inputErrorClass: 'popup__item_error',
     errorClass: 'popup__input-error_active',
     popupOpenedClass: 'popup_opened'
-});
+};
+
+const popupEditFormValidate = new ValidationForm(validData, popupEdit.querySelector(validData.formSelector))
+const popupAvatarFormValidate = new ValidationForm(validData, avatarEditPopup.querySelector(validData.formSelector))
+const popupPostFormValidate = new ValidationForm(validData, newPlacePopup.querySelector(validData.formSelector))
+
+popupEditFormValidate.enableValidation();
+popupAvatarFormValidate.enableValidation();
+popupPostFormValidate.enableValidation();
