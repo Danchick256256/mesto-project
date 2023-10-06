@@ -2,7 +2,7 @@ import './pages/index.css';
 
 import Card from './scripts/Card.js';
 import Api from './scripts/API';
-import ValidationForm from './scripts/ValidationForm.js';
+import FormValidator from './scripts/FormValidator.js';
 
 import {openPopup, closePopup, getMeta} from "./scripts/utils.js";
 import {
@@ -139,9 +139,9 @@ const validData = {
     popupOpenedClass: 'popup_opened'
 };
 
-const popupEditFormValidate = new ValidationForm(validData, popupEdit.querySelector(validData.formSelector))
-const popupAvatarFormValidate = new ValidationForm(validData, avatarEditPopup.querySelector(validData.formSelector))
-const popupPostFormValidate = new ValidationForm(validData, newPlacePopup.querySelector(validData.formSelector))
+const popupEditFormValidate = new FormValidator(validData, popupEdit.querySelector(validData.formSelector))
+const popupAvatarFormValidate = new FormValidator(validData, avatarEditPopup.querySelector(validData.formSelector))
+const popupPostFormValidate = new FormValidator(validData, newPlacePopup.querySelector(validData.formSelector))
 
 popupEditFormValidate.enableValidation();
 popupAvatarFormValidate.enableValidation();
