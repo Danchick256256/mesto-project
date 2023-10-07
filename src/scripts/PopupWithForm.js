@@ -1,12 +1,11 @@
 import Popup from "./Popup";
 
 class PopupWithForm extends Popup {
-    constructor(popupSelector, handlerSubmitForm) {
+    constructor(popupSelector, handlerSubmmitForm) {
         super(popupSelector);
-        this._handlerSubmitForm = handlerSubmitForm;
-        this.popupForm = this.popupElement.querySelector('.form');
-        this.inputList = this.popupForm.querySelectorAll('.popup__item');
-        this.setEventListeners();
+        this.handlerSubmmitForm = handlerSubmmitForm;
+        this.popupForm = this.popupSelector.querySelector('.form');
+        this.inputList = this.popupForm.querySelectorAll('.popup__item')
     }
     _getInputValues() {
         this._inputsValues = {};// сюда будут поступать значение инпутов
@@ -16,19 +15,10 @@ class PopupWithForm extends Popup {
         return this._inputsValues
     }
     setEventListeners() {
-        super.setEventListeners();
-        this.popupForm.addEventListener('submit', (evt) => { 
-            evt.preventDefault();
-            const formValues = this._getInputValues(); // Получаем значения полей формы
-            this._handlerSubmitForm(this) //та функция которая нужна попапу при отправке
-        })
+
     }
     close() {
         super.close();
         this.popupForm.reset();
     }
 }
-export default PopupWithForm
-
-
-

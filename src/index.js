@@ -5,7 +5,8 @@ import Api from './scripts/API';
 import UserInfo from "./scripts/UserInfo.js"
 import Section from "./scripts/Section.js"
 import FormValidator from './scripts/FormValidator.js';
-import { getMeta } from "./scripts/utils.js";
+
+import {openPopup, closePopup, getMeta} from "./scripts/utils.js";
 import {
     buttonOpenPopupAddCard, avatarInput, cardsSection,
     avatarEditPopup,
@@ -17,10 +18,10 @@ import {
     nameInput, newPlaceFormElement, newPlaceLinkInput, newPlaceNameInput,
     newPlacePopup, popups,
     profileAvatar,
-    profileSubtitle, profileTitle
+    profileSubtitle, profileTitle, popupImage
 } from "./scripts/constants";
-import Popup from './scripts/Popup.js';
-import PopupWithImage from './scripts/PopupWithImage.js';
+
+
 const fetchParams = {
     baseUrl: 'https://nomoreparties.co/v1/plus-cohort-28',
     headers: {
@@ -43,43 +44,36 @@ function render(item) {
 
 let user;
 
-const popupImage = new PopupWithImage('#imagePopup');
-
 const createCard = (link, title, template, createdAt, likes, owner, _id, userData) => {
-    const card = new Card(link, title, template, createdAt, likes, owner, _id, userData, (url, text, width, height) => {
-        popupImage.open(url, text, width, height);
-    });
+    const card = new Card(link, title, template, createdAt, likes, owner, _id, userData,);
     return card.createCard(api);
 }
 
-const buttonClosePopup = document.querySelectorAll('popup__button-close');
-
-
-// Открытие редактирование профиля
-const popupEditFunc = new Popup('#editPopup');
-const popupAddFunc = new Popup('#newPlacePopup');
-const popupProfileFunc = new Popup('#avatarPopup');
-
-
-
+popups.forEach((popup) => {
+    popup.addEventListener('mousedown', (evt) => {
+        if (evt.target.classList.contains('popup_opened')) {
+            closePopup(popup)
+        }
+        if (evt.target.classList.contains('popup__button-close')) {
+            closePopup(popup)
+        }
+    })
+})
 
 buttonOpenPopupEditUserData.addEventListener('click', () => {
-    popupEditFunc.open();
+    console.log(`{click.edit.button}`);
     nameInput.value = nameInput.value.length === 0 ? name.textContent : nameInput.value;
     jobInput.value = jobInput.value.length === 0 ? job.textContent : jobInput.value;
-    popupEditFunc.setEventListeners();
+    openPopup(popupEdit);
 });
-
-
-
 
 buttonOpenPopupAddCard.addEventListener('click', () => {
     console.log(`{click.add.button}`);
-    popupAddFunc.open();
+    openPopup(newPlacePopup);
 });
 
 profileAvatar.addEventListener('click', () => {
-    popupProfileFunc.open();
+    openPopup(avatarEditPopup);
 });
 
 function handleEditFormSubmit(evt) {
@@ -89,7 +83,7 @@ function handleEditFormSubmit(evt) {
         .then(response => {
             profileTitle.innerText = nameInput.value;
             profileSubtitle.innerText = jobInput.value;
-            popupEditFunc.close();
+            closePopup(popupEdit);
         })
         .catch(err => console.log(err));
 }
