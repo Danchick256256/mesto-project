@@ -1,4 +1,4 @@
-import {getMeta} from "./utils";
+import { getMeta } from "./utils";
 
 class Card {
     constructor(imageLink, name, templateClass, createdAt, likes, owner, _id, userData, openImagePopup) {
@@ -66,19 +66,12 @@ class Card {
         });
 
         this.cardImage.addEventListener('click', () => {
-            console.log(`{click.on.image{caption: ${this.cardTitle.textContent}}`);
-            popupImage.style.backgroundImage = `url(${this.cardImage.src})`;
-
             getMeta(
                 this.cardImage.src,
                 (width, height) => {
-                    popupImage.style.width = width + "px";
-                    popupImage.style.height = height + "px";
+                    this.openImagePopup(this.cardImage.src, this.cardTitle.textContent, `${width}px`, `${height}px`)
                 }
             )
-
-            popupCaption.textContent = this.cardTitle.textContent;
-            openPopup(imagePopup);
         });
 
         this.likeButton.addEventListener('click', () => {

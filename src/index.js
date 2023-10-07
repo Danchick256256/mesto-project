@@ -5,7 +5,6 @@ import Api from './scripts/API';
 import UserInfo from "./scripts/UserInfo.js"
 import Section from "./scripts/Section.js"
 import FormValidator from './scripts/FormValidator.js';
-
 import { getMeta } from "./scripts/utils.js";
 import {
     buttonOpenPopupAddCard, avatarInput, cardsSection,
@@ -20,10 +19,8 @@ import {
     profileAvatar,
     profileSubtitle, profileTitle
 } from "./scripts/constants";
-
 import Popup from './scripts/Popup.js';
 import PopupWithImage from './scripts/PopupWithImage.js';
-
 const fetchParams = {
     baseUrl: 'https://nomoreparties.co/v1/plus-cohort-28',
     headers: {
@@ -60,6 +57,9 @@ const buttonClosePopup = document.querySelectorAll('popup__button-close');
 
 // Открытие редактирование профиля
 const popupEditFunc = new Popup('#editPopup');
+const popupAddFunc = new Popup('#newPlacePopup');
+const popupProfileFunc = new Popup('#avatarPopup');
+
 
 
 
@@ -75,11 +75,11 @@ buttonOpenPopupEditUserData.addEventListener('click', () => {
 
 buttonOpenPopupAddCard.addEventListener('click', () => {
     console.log(`{click.add.button}`);
-    openPopup(newPlacePopup);
+    popupAddFunc.open();
 });
 
 profileAvatar.addEventListener('click', () => {
-    openPopup(avatarEditPopup);
+    popupProfileFunc.open();
 });
 
 function handleEditFormSubmit(evt) {
