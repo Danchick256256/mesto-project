@@ -73,17 +73,8 @@ class Card {
         this.cardImage.addEventListener('click', () => {
             console.log(`{click.on.image{caption: ${this.cardTitle.textContent}}`);
             popupImage.style.backgroundImage = `url(${this.cardImage.src})`;
-
-            getMeta(
-                this.cardImage.src,
-                (width, height) => {
-                    popupImage.style.width = width + "px";
-                    popupImage.style.height = height + "px";
-                }
-            )
-
-            popupCaption.textContent = this.cardTitle.textContent;
-            openPopup(imagePopup);
+            const PopupWithImg = new PopupWithImage()
+           PopupWithImg.open(data) 
         });
 
         this.likeButton.addEventListener('click', () => {
