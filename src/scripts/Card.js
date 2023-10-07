@@ -26,6 +26,10 @@ class Card {
 
         this.#setElements(cardElement);
 
+        if (this.userData._id !== this.owner._id) {
+            this.deleteButton.style.display = 'none';
+        }
+
         for (const like of this.likes) {
             if (like._id === this.userData._id) {
                 this.likeButton.classList.add('card__button-like_active_true');

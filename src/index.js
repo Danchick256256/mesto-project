@@ -2,6 +2,8 @@ import './pages/index.css';
 
 import Card from './scripts/Card.js';
 import Api from './scripts/API';
+import UserInfo from "./scripts/UserInfo.js"
+import Section from "./scripts/Section.js"
 import FormValidator from './scripts/FormValidator.js';
 
 import {openPopup, closePopup, getMeta} from "./scripts/utils.js";
@@ -29,6 +31,16 @@ const fetchParams = {
 };
 
 const api = new Api(fetchParams);
+const userInfo = new UserInfo({
+    userName: profileTitle,
+    userAbout: profileSubtitle,
+    userAvatar: profileAvatar
+}, api);
+const section = new Section({renderer: render})
+
+function render(item) {
+    cardsSection.prepend(item)
+}
 
 let user;
 
@@ -67,7 +79,7 @@ profileAvatar.addEventListener('click', () => {
 function handleEditFormSubmit(evt) {
     console.log(`{submit.edit.form}`);
     evt.preventDefault();
-    api.setUserInfo(nameInput.value, jobInput.value)
+    api.setUserInfoApi(nameInput.value, jobInput.value)
         .then(response => {
             profileTitle.innerText = nameInput.value;
             profileSubtitle.innerText = jobInput.value;
@@ -82,10 +94,10 @@ function handleNewPlaceFormSubmit(evt) {
     getMeta(newPlaceLinkInput.value, (width, height) => {
         api.saveCard(newPlaceNameInput.value, newPlaceLinkInput.value)
             .then(response => {
-                const card = new Card(newPlaceLinkInput.value, newPlaceNameInput.value, '.card__template', response.createdAt, response.likes, response.owner, response._id, user).createCard(api);
+                const card = createCard(newPlaceLinkInput.value, newPlaceNameInput.value, '.card__template', response.createdAt, response.likes, response.owner, response._id, user);
                 newPlaceLinkInput.value = "";
                 newPlaceNameInput.value = "";
-                cardsSection.prepend(card);
+                section.addItem(card);
                 closePopup(newPlacePopup);
             })
             .catch(err => {
@@ -99,7 +111,11 @@ function handleAvatarUpdateSubmit(evt) {
     evt.preventDefault();
     api.setAvatar(avatarInput.value)
         .then(r => {
-            profileAvatar.style.backgroundImage = `url(${avatarInput.value})`
+            userInfo.setUserInfo({
+                name: r.name,
+                about: r.about,
+                avatar: r.avatar
+            })
             closePopup(avatarEditPopup);
         })
         .catch(err => console.log(err));
@@ -110,20 +126,16 @@ formElementEdit.addEventListener('submit', handleEditFormSubmit);
 newPlaceFormElement.addEventListener('submit', handleNewPlaceFormSubmit);
 avatarEditPopup.addEventListener('submit', handleAvatarUpdateSubmit);
 
-Promise.all([api.getUserInfo(), api.getCards()])
+Promise.all([userInfo.getUserInfo(), api.getCards()])
     .then((result) => {
         const [userData, cards] = result;
         user = userData;
-        console.log("TEST")
-        profileTitle.textContent = userData.name;
-        profileSubtitle.textContent = userData.about;
-        profileAvatar.style.backgroundImage = `url(${userData.avatar})`
-
-        for (const cardData of cards.reverse()) {
-            const card = createCard(cardData.link, cardData.name, '.card__template', cardData.createdAt, cardData.likes, cardData.owner, cardData._id, userData);
-            console.log(`{adding.initial.cards{${cardData.link}, ${cardData.name}}`);
-            cardsSection.prepend(card);
-        }
+        userInfo.setUserInfo({
+            name: userData.name,
+            about: userData.about,
+            avatar: userData.avatar
+        })
+        section.renderAll(cards.reverse().map(cardData => createCard(cardData.link, cardData.name, '.card__template', cardData.createdAt, cardData.likes, cardData.owner, cardData._id, userData)));
     })
     .catch((err) => {
         console.log(err);

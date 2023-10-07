@@ -4,13 +4,13 @@ export default class Api {
         this.headers = headers;
     }
 
-    getUserInfo() {
+    getUserInfoApi() {
         return fetch(`${this.baseUrl}/users/me`, {
             headers: this.headers
         }).then(this.getData);
     }
 
-    setUserInfo(name, about) {
+    setUserInfoApi(name, about) {
         return fetch(`${this.baseUrl}/users/me`, {
             method: 'PATCH',
             headers: this.headers,
