@@ -6,7 +6,7 @@ import UserInfo from "./scripts/UserInfo.js"
 import Section from "./scripts/Section.js"
 import FormValidator from './scripts/FormValidator.js';
 
-import {openPopup, closePopup, getMeta} from "./scripts/utils.js";
+import { getMeta } from "./scripts/utils.js";
 import {
     buttonOpenPopupAddCard, avatarInput, cardsSection,
     avatarEditPopup,
@@ -21,6 +21,7 @@ import {
     profileSubtitle, profileTitle, popupImage
 } from "./scripts/constants";
 
+import Popup from './scripts/Popup.js';
 
 const fetchParams = {
     baseUrl: 'https://nomoreparties.co/v1/plus-cohort-28',
@@ -49,23 +50,25 @@ const createCard = (link, title, template, createdAt, likes, owner, _id, userDat
     return card.createCard(api);
 }
 
-popups.forEach((popup) => {
-    popup.addEventListener('mousedown', (evt) => {
-        if (evt.target.classList.contains('popup_opened')) {
-            closePopup(popup)
-        }
-        if (evt.target.classList.contains('popup__button-close')) {
-            closePopup(popup)
-        }
-    })
-})
+
+
+
+
+const buttonClosePopup = document.querySelectorAll('popup__button-close');
+
+
+// Открытие редактирование профиля
+const popupEditFunc = new Popup('#editPopup');
 
 buttonOpenPopupEditUserData.addEventListener('click', () => {
-    console.log(`{click.edit.button}`);
+    popupEditFunc.open();
     nameInput.value = nameInput.value.length === 0 ? name.textContent : nameInput.value;
     jobInput.value = jobInput.value.length === 0 ? job.textContent : jobInput.value;
-    openPopup(popupEdit);
+    popupEditFunc.setEventListeners();
 });
+
+
+
 
 buttonOpenPopupAddCard.addEventListener('click', () => {
     console.log(`{click.add.button}`);
@@ -83,7 +86,7 @@ function handleEditFormSubmit(evt) {
         .then(response => {
             profileTitle.innerText = nameInput.value;
             profileSubtitle.innerText = jobInput.value;
-            closePopup(popupEdit);
+            popupEditFunc.close();
         })
         .catch(err => console.log(err));
 }
