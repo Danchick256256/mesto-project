@@ -3,7 +3,7 @@ class Popup {
       this.popupElement = document.querySelector(popupSelector);
       this._handleEscClose = this._handleEscClose.bind(this)
   
-      this.setEventListeners();
+      //this.setEventListeners();
     }
     open() {
         this.popupElement.classList.add('popup_opened');
@@ -22,11 +22,10 @@ class Popup {
     }
   
   
-    setEventListeners() { 
+    setEventListeners() {
       this.popupElement.querySelector('.popup__button-close').addEventListener('click', () => {
         this.close();
       });
-
       this.popupElement.addEventListener('mousedown', (evt) => {
         if (evt.target.classList.contains('popup_opened')) {
           this.close();

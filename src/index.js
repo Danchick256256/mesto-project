@@ -6,23 +6,22 @@ import UserInfo from "./scripts/UserInfo.js"
 import Section from "./scripts/Section.js"
 import FormValidator from './scripts/FormValidator.js';
 
-import { getMeta } from "./scripts/utils.js";
+import {getMeta} from "./scripts/utils.js";
 import {
     buttonOpenPopupAddCard, avatarInput, cardsSection,
     avatarEditPopup,
-    buttonOpenPopupEditUserData, formElementEdit,
-    popupEdit,
+    buttonOpenPopupEditUserData, popupEdit,
     job,
     name,
     jobInput,
-    nameInput, newPlaceFormElement, newPlaceLinkInput, newPlaceNameInput,
-    newPlacePopup, popups,
-    profileAvatar,
+    nameInput, newPlacePopup, profileAvatar,
     profileSubtitle, profileTitle
 } from "./scripts/constants";
 
 import Popup from './scripts/Popup.js';
 import PopupWithImage from './scripts/PopupWithImage.js';
+import PopupWithForm from './scripts/PopupWithForm.js';
+
 
 const fetchParams = {
     baseUrl: 'https://nomoreparties.co/v1/plus-cohort-28',
@@ -38,83 +37,19 @@ const userInfo = new UserInfo({
     userAbout: profileSubtitle,
     userAvatar: profileAvatar
 }, api);
-const section = new Section({renderer: render})
 
-function render(item) {
-    cardsSection.prepend(item)
-}
+const section = new Section({
+    renderer: (item) => {
+        cardsSection.prepend(item)
+    }
+})
 
 let user;
 
 const popupImage = new PopupWithImage('#imagePopup');
-
-const createCard = (link, title, template, createdAt, likes, owner, _id, userData) => {
-    const card = new Card(link, title, template, createdAt, likes, owner, _id, userData, (url, text, width, height) => {
-        popupImage.open(url, text, width, height);
-    });
-    return card.createCard(api);
-}
-
-const buttonClosePopup = document.querySelectorAll('popup__button-close');
-
-
-// Открытие редактирование профиля
-const popupEditFunc = new Popup('#editPopup');
-
-
-
-buttonOpenPopupEditUserData.addEventListener('click', () => {
-    popupEditFunc.open();
-    nameInput.value = nameInput.value.length === 0 ? name.textContent : nameInput.value;
-    jobInput.value = jobInput.value.length === 0 ? job.textContent : jobInput.value;
-    popupEditFunc.setEventListeners();
-});
-
-
-
-
-buttonOpenPopupAddCard.addEventListener('click', () => {
-    console.log(`{click.add.button}`);
-    openPopup(newPlacePopup);
-});
-
-profileAvatar.addEventListener('click', () => {
-    openPopup(avatarEditPopup);
-});
-
-function handleEditFormSubmit(evt) {
-    console.log(`{submit.edit.form}`);
-    evt.preventDefault();
-    api.setUserInfoApi(nameInput.value, jobInput.value)
-        .then(response => {
-            profileTitle.innerText = nameInput.value;
-            profileSubtitle.innerText = jobInput.value;
-            popupEditFunc.close();
-        })
-        .catch(err => console.log(err));
-}
-
-function handleNewPlaceFormSubmit(evt) {
-    console.log(`{submit.newPlace.form}`);
-    evt.preventDefault();
-    getMeta(newPlaceLinkInput.value, (width, height) => {
-        api.saveCard(newPlaceNameInput.value, newPlaceLinkInput.value)
-            .then(response => {
-                const card = createCard(newPlaceLinkInput.value, newPlaceNameInput.value, '.card__template', response.createdAt, response.likes, response.owner, response._id, user);
-                newPlaceLinkInput.value = "";
-                newPlaceNameInput.value = "";
-                section.addItem(card);
-                closePopup(newPlacePopup);
-            })
-            .catch(err => {
-                console.log(err)
-            });
-    });
-}
-
-function handleAvatarUpdateSubmit(evt) {
+const popupAvatarEdit = new PopupWithForm('#avatarPopup', (inputs) => {
+    console.log(inputs)
     console.log(`{submit.updateAvatar.form}`);
-    evt.preventDefault();
     api.setAvatar(avatarInput.value)
         .then(r => {
             userInfo.setUserInfo({
@@ -122,15 +57,59 @@ function handleAvatarUpdateSubmit(evt) {
                 about: r.about,
                 avatar: r.avatar
             })
-            closePopup(avatarEditPopup);
         })
         .catch(err => console.log(err));
+});
+const popupNewPlace = new PopupWithForm('#newPlacePopup', (inputs) => {
+    console.log(inputs)
+    console.log(`{submit.newPlace.form}`);
+    getMeta(inputs.link, (width, height) => {
+        api.saveCard(inputs.name, inputs.link)
+            .then(response => {
+                const card = createCard(inputs.link, inputs.name, '.card__template', response.createdAt, response.likes, response.owner, response._id, user);
+                section.addItem(card);
+            })
+            .catch(err => {
+                console.log(err)
+            });
+    });
+});
+const popupEditForm = new PopupWithForm('#editPopup', (inputs) => {
+    console.log(`{submit.edit.form}`);
+    api.setUserInfoApi(inputs.username, inputs.job)
+        .then(response => {
+            profileTitle.innerText = inputs.username;
+            profileSubtitle.innerText = inputs.job;
+        })
+        .catch(err => console.log(err));
+});
+
+buttonOpenPopupEditUserData.addEventListener('click', () => {
+    popupEditForm.open();
+    nameInput.value = nameInput.value.length === 0 ? name.textContent : nameInput.value;
+    jobInput.value = jobInput.value.length === 0 ? job.textContent : jobInput.value;
+    popupEditForm.setEventListeners();
+});
+
+buttonOpenPopupAddCard.addEventListener('click', () => {
+    console.log(`{click.add.button}`);
+    popupNewPlace.open();
+    popupNewPlace.setEventListeners();
+});
+
+profileAvatar.addEventListener('click', () => {
+    popupAvatarEdit.open();
+    popupAvatarEdit.setEventListeners();
+});
+
+
+const createCard = (link, title, template, createdAt, likes, owner, _id, userData) => {
+    const card = new Card(link, title, template, createdAt, likes, owner, _id, userData, (url, text, width, height) => {
+        popupImage.open(url, text, width, height);
+        popupImage.setEventListeners();
+    });
+    return card.createCard(api);
 }
-
-
-formElementEdit.addEventListener('submit', handleEditFormSubmit);
-newPlaceFormElement.addEventListener('submit', handleNewPlaceFormSubmit);
-avatarEditPopup.addEventListener('submit', handleAvatarUpdateSubmit);
 
 Promise.all([userInfo.getUserInfo(), api.getCards()])
     .then((result) => {
