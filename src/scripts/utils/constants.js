@@ -7,8 +7,6 @@ export const newPlacePopup = document.querySelector('#newPlacePopup');
 export const profileTitle = document.querySelector('.profile__title');
 export const profileAvatar = document.querySelector('.profile__avatar');
 export const profileSubtitle = document.querySelector('.profile__subtitle');
-export const avatarElementEdit = document.querySelector("#editAvatarForm");
-export const avatarInput = avatarElementEdit.querySelector('input[name="avatar"]');
 export const formElementEdit = document.querySelector("#editForm");
 export const nameInput = formElementEdit.querySelector('input[name="username"]');
 export const jobInput = formElementEdit.querySelector('input[name="job"]');

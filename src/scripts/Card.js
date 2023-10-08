@@ -1,4 +1,4 @@
-import {getMeta} from "./utils";
+import {getMeta} from "./utils/utils";
 
 class Card {
     constructor(imageLink, name, templateClass, createdAt, likes, owner, _id, userData, openImagePopup) {

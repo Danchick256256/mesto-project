@@ -1,14 +1,14 @@
-import './pages/index.css';
+import './index.css';
 
-import Card from './scripts/Card.js';
-import Api from './scripts/API';
-import UserInfo from "./scripts/UserInfo.js"
-import Section from "./scripts/Section.js"
-import FormValidator from './scripts/FormValidator.js';
+import Card from '../scripts/Card.js';
+import Api from '../scripts/API';
+import UserInfo from "../scripts/UserInfo.js"
+import Section from "../scripts/Section.js"
+import FormValidator from '../scripts/FormValidator.js';
 
-import {getMeta} from "./scripts/utils.js";
+import {getMeta} from "../scripts/utils/utils.js";
 import {
-    buttonOpenPopupAddCard, avatarInput, cardsSection,
+    buttonOpenPopupAddCard, cardsSection,
     avatarEditPopup,
     buttonOpenPopupEditUserData, popupEdit,
     job,
@@ -16,10 +16,10 @@ import {
     jobInput,
     nameInput, newPlacePopup, profileAvatar,
     profileSubtitle, profileTitle
-} from "./scripts/constants";
+} from "../scripts/utils/constants";
 
-import PopupWithImage from './scripts/PopupWithImage.js';
-import PopupWithForm from './scripts/PopupWithForm.js';
+import PopupWithImage from '../scripts/PopupWithImage.js';
+import PopupWithForm from '../scripts/PopupWithForm.js';
 
 
 const fetchParams = {
@@ -47,58 +47,61 @@ let user;
 
 const popupImage = new PopupWithImage('#imagePopup');
 const popupAvatarEdit = new PopupWithForm('#avatarPopup', (inputs) => {
-    console.log(inputs)
     console.log(`{submit.updateAvatar.form}`);
-    api.setAvatar(avatarInput.value)
+    popupAvatarEdit.renderLoading(true)
+    api.setAvatar(inputs.avatar)
         .then(r => {
             userInfo.setUserInfo({
                 name: r.name,
                 about: r.about,
                 avatar: r.avatar
             })
+            popupAvatarEdit.close();
         })
-        .catch(err => console.log(err));
+        .catch(err => console.log(err))
+        .finally(() => popupAvatarEdit.renderLoading(false));
 });
 const popupNewPlace = new PopupWithForm('#newPlacePopup', (inputs) => {
-    console.log(inputs)
     console.log(`{submit.newPlace.form}`);
+    popupNewPlace.renderLoading(true);
     getMeta(inputs.link, (width, height) => {
         api.saveCard(inputs.name, inputs.link)
             .then(response => {
                 const card = createCard(inputs.link, inputs.name, '.card__template', response.createdAt, response.likes, response.owner, response._id, user);
                 section.addItem(card);
+                popupNewPlace.close();
             })
             .catch(err => {
                 console.log(err)
-            });
+            })
+            .finally(() => popupNewPlace.renderLoading(false));
     });
 });
 const popupEditForm = new PopupWithForm('#editPopup', (inputs) => {
     console.log(`{submit.edit.form}`);
+    popupEditForm.renderLoading(true);
     api.setUserInfoApi(inputs.username, inputs.job)
         .then(response => {
-            profileTitle.innerText = inputs.username;
-            profileSubtitle.innerText = inputs.job;
+            profileTitle.innerText = response.name;
+            profileSubtitle.innerText = response.about;
+            popupEditForm.close();
         })
-        .catch(err => console.log(err));
+        .catch(err => console.log(err))
+        .finally(() => popupEditForm.renderLoading(false));
 });
 
 buttonOpenPopupEditUserData.addEventListener('click', () => {
     popupEditForm.open();
     nameInput.value = nameInput.value.length === 0 ? name.textContent : nameInput.value;
     jobInput.value = jobInput.value.length === 0 ? job.textContent : jobInput.value;
-    popupEditForm.setEventListeners();
 });
 
 buttonOpenPopupAddCard.addEventListener('click', () => {
-    console.log(`{click.add.button}`);
     popupNewPlace.open();
-    popupNewPlace.setEventListeners();
 });
 
 profileAvatar.addEventListener('click', () => {
     popupAvatarEdit.open();
-    popupAvatarEdit.setEventListeners();
 });
 
 
