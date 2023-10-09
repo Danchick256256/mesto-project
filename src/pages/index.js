@@ -120,7 +120,7 @@ const createCard = (link, title, template, createdAt, likes, owner, _id, userDat
     return card.createCard(api);
 }
 
-Promise.all([api.getUserInfoApi(), api.getCards()]) // как получать данные от сервера с помощью .getUserInfo() если api нельзя использовать внутри UserInfo?
+Promise.all([api.getUserInfoApi(), api.getCards()])
     .then((result) => {
         const [userData, cards] = result;
         user = userData;
