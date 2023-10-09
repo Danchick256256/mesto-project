@@ -8,14 +8,12 @@ import FormValidator from '../scripts/FormValidator.js';
 
 import {getMeta} from "../scripts/utils/utils.js";
 import {
-    buttonOpenPopupAddCard, cardsSection,
+    buttonOpenPopupAddCard,
     avatarEditPopup,
     buttonOpenPopupEditUserData, popupEdit,
-    job,
-    name,
     jobInput,
     nameInput, newPlacePopup, profileAvatar,
-    profileSubtitle, profileTitle
+    profileSubtitle, profileTitle, validData
 } from "../scripts/utils/constants";
 
 import PopupWithImage from '../scripts/PopupWithImage.js';
@@ -34,18 +32,20 @@ const api = new Api(fetchParams);
 const userInfo = new UserInfo({
     userName: profileTitle,
     userAbout: profileSubtitle,
-    userAvatar: profileAvatar
+    userAvatar: profileAvatar,
+    _id: null
 }, api);
 
-const section = new Section({
-    renderer: (item) => {
-        cardsSection.prepend(item)
+const section = new Section('.elements', {
+    renderer: (section, item) => {
+        section.prepend(item)
     }
 })
 
 let user;
 
 const popupImage = new PopupWithImage('#imagePopup');
+popupImage.setEventListeners();
 const popupAvatarEdit = new PopupWithForm('#avatarPopup', (inputs) => {
     console.log(`{submit.updateAvatar.form}`);
     popupAvatarEdit.renderLoading(true)
@@ -61,6 +61,7 @@ const popupAvatarEdit = new PopupWithForm('#avatarPopup', (inputs) => {
         .catch(err => console.log(err))
         .finally(() => popupAvatarEdit.renderLoading(false));
 });
+popupAvatarEdit.setEventListeners();
 const popupNewPlace = new PopupWithForm('#newPlacePopup', (inputs) => {
     console.log(`{submit.newPlace.form}`);
     popupNewPlace.renderLoading(true);
@@ -77,23 +78,30 @@ const popupNewPlace = new PopupWithForm('#newPlacePopup', (inputs) => {
             .finally(() => popupNewPlace.renderLoading(false));
     });
 });
+popupNewPlace.setEventListeners();
 const popupEditForm = new PopupWithForm('#editPopup', (inputs) => {
     console.log(`{submit.edit.form}`);
     popupEditForm.renderLoading(true);
     api.setUserInfoApi(inputs.username, inputs.job)
         .then(response => {
-            profileTitle.innerText = response.name;
-            profileSubtitle.innerText = response.about;
+            userInfo.setUserInfo({
+                name: response.name,
+                about: response.about,
+                avatar: response.avatar
+            })
             popupEditForm.close();
         })
         .catch(err => console.log(err))
         .finally(() => popupEditForm.renderLoading(false));
 });
+popupEditForm.setEventListeners();
 
 buttonOpenPopupEditUserData.addEventListener('click', () => {
     popupEditForm.open();
-    nameInput.value = nameInput.value.length === 0 ? name.textContent : nameInput.value;
-    jobInput.value = jobInput.value.length === 0 ? job.textContent : jobInput.value;
+    userInfo.getUserInfo().then(response => {
+        nameInput.value = nameInput.value.length === 0 ? response.name : nameInput.value;
+        jobInput.value = jobInput.value.length === 0 ? response.about : jobInput.value;
+    });
 });
 
 buttonOpenPopupAddCard.addEventListener('click', () => {
@@ -108,35 +116,25 @@ profileAvatar.addEventListener('click', () => {
 const createCard = (link, title, template, createdAt, likes, owner, _id, userData) => {
     const card = new Card(link, title, template, createdAt, likes, owner, _id, userData, (url, text, width, height) => {
         popupImage.open(url, text, width, height);
-        popupImage.setEventListeners();
     });
     return card.createCard(api);
 }
 
-Promise.all([userInfo.getUserInfo(), api.getCards()])
+Promise.all([userInfo.getUserInfo(), api.getCards()]) // как получать данные от сервера с помощью .getUserInfo() если api нельзя использовать внутри UserInfo?
     .then((result) => {
         const [userData, cards] = result;
         user = userData;
         userInfo.setUserInfo({
             name: userData.name,
             about: userData.about,
-            avatar: userData.avatar
+            avatar: userData.avatar,
+            _id: userData._id
         })
         section.renderAll(cards.reverse().map(cardData => createCard(cardData.link, cardData.name, '.card__template', cardData.createdAt, cardData.likes, cardData.owner, cardData._id, userData)));
     })
     .catch((err) => {
         console.log(err);
     });
-
-const validData = {
-    formSelector: '.form',
-    inputSelector: '.form__input',
-    submitButtonSelector: '.popup__button-submit',
-    inactiveButtonClass: 'popup__button-submit_disabled',
-    inputErrorClass: 'popup__item_error',
-    errorClass: 'popup__input-error_active',
-    popupOpenedClass: 'popup_opened'
-};
 
 const popupEditFormValidate = new FormValidator(validData, popupEdit.querySelector(validData.formSelector))
 const popupAvatarFormValidate = new FormValidator(validData, avatarEditPopup.querySelector(validData.formSelector))

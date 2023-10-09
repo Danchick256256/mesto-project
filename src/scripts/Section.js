@@ -1,5 +1,6 @@
 export default class Section {
-    constructor({renderer}) {
+    constructor(sectionSelector, {renderer}) {
+        this.sectionElement = document.querySelector(sectionSelector);
         this.renderer = renderer;
     }
 
@@ -10,6 +11,6 @@ export default class Section {
     }
 
     addItem(item) {
-        this.renderer(item);
+        this.renderer(this.sectionElement, item);
     }
 }

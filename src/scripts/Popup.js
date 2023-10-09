@@ -2,7 +2,6 @@ class Popup {
   constructor(popupSelector) {
       this.popupElement = document.querySelector(popupSelector);
       this._handleEscClose = this._handleEscClose.bind(this)
-  
     }
     open() {
         this.popupElement.classList.add('popup_opened');
@@ -19,7 +18,6 @@ class Popup {
           this.close();
       }
     }
-  
   
     setEventListeners() {
       this.popupElement.querySelector('.popup__button-close').addEventListener('click', () => {
