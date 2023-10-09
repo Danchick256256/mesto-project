@@ -12,14 +12,8 @@ function closeByEscape(evt) {
     }
 }
 
-export function openPopup(popup) {
-    document.addEventListener('keydown', closeByEscape, false);
-    console.log(`{open.popup{${popup}}`);
-    popup.classList.add('popup_opened');
-}
-
 export const getMeta = (url, callback) => {
     const img = new Image();
     img.src = url;
-    img.onload = function() { callback(this.width, this.height); }
+    img.onload = function () { callback(this.width, this.height); }
 }

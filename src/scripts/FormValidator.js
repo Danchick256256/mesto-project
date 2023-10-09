@@ -1,4 +1,4 @@
-class ValidationForm {
+class FormValidator {
     constructor({formSelector, inputSelector, submitButtonSelector, inactiveButtonClass, inputErrorClass, errorClass, popupOpenedClass}, formElement) {
         try {
             this.popupOpenedClass = popupOpenedClass;
@@ -8,7 +8,7 @@ class ValidationForm {
             this.formElement = formElement;
             this.inputList = Array.from(formElement.querySelectorAll(inputSelector));
             this.submitButton = formElement.querySelector(submitButtonSelector);
-            this.checkValidity() ? this.disableButton() : this.enableButton();
+            this.#checkValidity() ? this.#disableButton() : this.#enableButton();
         } catch (e) {}
     };
 
@@ -16,15 +16,18 @@ class ValidationForm {
         const observer = new MutationObserver((mutation) => {
             if (mutation[0].type === 'attributes' && mutation[0].attributeName === 'class') {
                 if (mutation[0].target.classList.contains(this.popupOpenedClass)) {
-                    this.checkValidity() ? this.disableButton() : this.enableButton();
+                    this.#checkValidity() ? this.#disableButton() : this.#enableButton();
                 }
             }
         });
         observer.observe(document, { attributes: true, subtree: true, attributeFilter: ['class'] });
+        this.#setEventListeners();
+    };
 
+    #setEventListeners() {
         this.inputList.forEach((inputElement) => {
             inputElement.addEventListener('input', () => {
-                this.checkValidity() ? this.disableButton() : this.enableButton();
+                this.#checkValidity() ? this.#disableButton() : this.#enableButton();
                 const errorElement = this.formElement.querySelector(`#${inputElement.id}-error`);
                 if (!inputElement.validity.valid || inputElement.validity.isCustom) {
                     inputElement.classList.add(this.inputErrorClass);
@@ -48,19 +51,19 @@ class ValidationForm {
                 }
             });
         });
-    };
+    }
 
-    disableButton() {
+    #disableButton() {
         this.submitButton.disabled = true;
         this.submitButton.classList.add(this.inactiveButtonClass);
     };
 
-    enableButton() {
+    #enableButton() {
         this.submitButton.disabled = false;
         this.submitButton.classList.remove(this.inactiveButtonClass);
     };
 
-    checkValidity() {
+    #checkValidity() {
         return this.inputList.some((inputElement) => {
             if (inputElement.type === "text") {
                 const pattern = /^[A-Za-zА-Яа-яЁё\s-]+$/;
@@ -76,4 +79,4 @@ class ValidationForm {
     };
 }
 
-export default ValidationForm;
+export default FormValidator;
