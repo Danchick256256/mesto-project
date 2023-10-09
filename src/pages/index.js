@@ -30,11 +30,10 @@ const fetchParams = {
 
 const api = new Api(fetchParams);
 const userInfo = new UserInfo({
-    userName: profileTitle,
-    userAbout: profileSubtitle,
-    userAvatar: profileAvatar,
-    _id: null
-}, api);
+    nameSelector: profileTitle,
+    jobSelector: profileSubtitle,
+    avatarSelector: profileAvatar
+});
 
 const section = new Section('.elements', {
     renderer: (section, item) => {
@@ -54,7 +53,8 @@ const popupAvatarEdit = new PopupWithForm('#avatarPopup', (inputs) => {
             userInfo.setUserInfo({
                 name: r.name,
                 about: r.about,
-                avatar: r.avatar
+                avatar: r.avatar,
+                _id: r._id
             })
             popupAvatarEdit.close();
         })
@@ -87,7 +87,8 @@ const popupEditForm = new PopupWithForm('#editPopup', (inputs) => {
             userInfo.setUserInfo({
                 name: response.name,
                 about: response.about,
-                avatar: response.avatar
+                avatar: response.avatar,
+                _id: response._id
             })
             popupEditForm.close();
         })
@@ -98,10 +99,9 @@ popupEditForm.setEventListeners();
 
 buttonOpenPopupEditUserData.addEventListener('click', () => {
     popupEditForm.open();
-    userInfo.getUserInfo().then(response => {
-        nameInput.value = nameInput.value.length === 0 ? response.name : nameInput.value;
-        jobInput.value = jobInput.value.length === 0 ? response.about : jobInput.value;
-    });
+    const data = userInfo.getUserInfo()
+    nameInput.value = nameInput.value.length === 0 ? data.name : nameInput.value;
+    jobInput.value = jobInput.value.length === 0 ? data.about : jobInput.value;
 });
 
 buttonOpenPopupAddCard.addEventListener('click', () => {
@@ -120,7 +120,7 @@ const createCard = (link, title, template, createdAt, likes, owner, _id, userDat
     return card.createCard(api);
 }
 
-Promise.all([userInfo.getUserInfo(), api.getCards()]) // как получать данные от сервера с помощью .getUserInfo() если api нельзя использовать внутри UserInfo?
+Promise.all([api.getUserInfoApi(), api.getCards()]) // как получать данные от сервера с помощью .getUserInfo() если api нельзя использовать внутри UserInfo?
     .then((result) => {
         const [userData, cards] = result;
         user = userData;
